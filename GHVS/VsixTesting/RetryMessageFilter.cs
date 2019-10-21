@@ -5,6 +5,7 @@ namespace VsixTesting.Utilities
     using System;
     using System.Diagnostics;
     using System.Threading;
+    using System.Threading.Tasks;
     using static Interop.Ole32;
 
     internal sealed class RetryMessageFilter : IMessageFilter, IDisposable
@@ -13,6 +14,30 @@ namespace VsixTesting.Utilities
         private const int CancelCall = -1;
         private readonly IMessageFilter prevFilter;
         private TimeSpan timeout = TimeSpan.FromSeconds(30);
+
+        public static Task Run(Action action)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    using (new RetryMessageFilter())
+                    {
+                        action();
+                    }
+
+                    tcs.SetResult(null);
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            return tcs.Task;
+        }
 
         public RetryMessageFilter()
         {

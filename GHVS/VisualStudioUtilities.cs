@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Threading;
 using System.Threading.Tasks;
 using VsixTesting.Interop;
 using VsixTesting.Utilities;
@@ -15,41 +14,18 @@ namespace GHVS
     {
         public static Task EditAsync(string path)
         {
-            return StartSTATask(() =>
+            return RetryMessageFilter.Run(() =>
             {
-                using (new RetryMessageFilter())
+                foreach (var dte in GetDTEsForPath(path))
                 {
-                    foreach (var dte in GetDTEsForPath(path))
+                    if (File.Exists(path))
                     {
-                        if (File.Exists(path))
-                        {
-                            dte.ItemOperations.OpenFile(path);
-                        }
-
-                        BringToFront((IntPtr)dte.MainWindow.HWnd);
+                        dte.ItemOperations.OpenFile(path);
                     }
-                }
-            });
-        }
 
-        static Task StartSTATask(Action func)
-        {
-            var tcs = new TaskCompletionSource<object>();
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    func();
-                    tcs.SetResult(null);
-                }
-                catch (Exception e)
-                {
-                    tcs.SetException(e);
+                    BringToFront((IntPtr)dte.MainWindow.HWnd);
                 }
             });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            return tcs.Task;
         }
 
         static void BringToFront(IntPtr hWnd)
