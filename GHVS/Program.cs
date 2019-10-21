@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using GitHub.Primitives;
 using Microsoft.Alm.Authentication;
 using McMaster.Extensions.CommandLineUtils;
-using System.Linq;
 
 namespace GHVS
 {
@@ -19,11 +19,13 @@ namespace GHVS
         typeof(BranchCommand),
         typeof(UpstreamCommand),
         typeof(LoginCommand),
-        typeof(LogoutCommand))]
+        typeof(LogoutCommand),
+        typeof(OpenCommand)
+    )]
     class Program : GitHubCommandBase
     {
-        public static Task Main(string[] args)
-            => CommandLineApplication.ExecuteAsync<Program>(args);
+        public static Task Main(string[] args) =>
+            CommandLineApplication.ExecuteAsync<Program>(args);
 
         protected override Task OnExecute(CommandLineApplication app)
         {
@@ -349,6 +351,19 @@ Associated pull requests:");
 
             await Task.Yield();
         }
+    }
+
+    [Command(Description = "Open a file or directory in Visual Studio")]
+    class OpenCommand : GitHubCommandBase
+    {
+        protected override async Task OnExecute(CommandLineApplication app)
+        {
+            var path = System.IO.Path.GetFullPath(Path);
+            await VisualStudioUtilities.EditAsync(path);
+        }
+
+        [Argument(0, Description = "The path to open")]
+        public string Path { get; set; }
     }
 
     /// <summary>
