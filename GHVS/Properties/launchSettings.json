@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Git-GitHub": {
+    "GHVS": {
       "commandName": "Project",
       "commandLineArgs": "--host https://github.com"
     }

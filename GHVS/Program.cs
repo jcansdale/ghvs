@@ -7,9 +7,9 @@ using Microsoft.Alm.Authentication;
 using McMaster.Extensions.CommandLineUtils;
 using System.Linq;
 
-namespace Git_GitHub
+namespace GHVS
 {
-    [Command("git-github")]
+    [Command("ghvs")]
     [Subcommand(
         typeof(PullsCommand),
         typeof(IssuesCommand),
@@ -365,7 +365,7 @@ Associated pull requests:");
         {
             host = Host ?? host ?? "https://github.com";
 
-            var productInformation = new ProductHeaderValue("Git-GitHub", "0.1");
+            var productInformation = new ProductHeaderValue("GHVS", "0.1");
             var token = GetToken(host);
 
             var hostAddress = HostAddress.Create(host);

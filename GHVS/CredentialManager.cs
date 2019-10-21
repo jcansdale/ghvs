@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace Git_GitHub
+namespace GHVS
 {
     public class CredentialManager
     {

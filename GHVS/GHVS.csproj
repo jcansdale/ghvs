@@ -3,14 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RootNamespace>Git_GitHub</RootNamespace>
+    <RootNamespace>GHVS</RootNamespace>
     <Authors>Jamie Cansdale</Authors>
     <Company>Mutant Design Limited</Company>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>git-github</ToolCommandName>
+    <ToolCommandName>ghvs</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
