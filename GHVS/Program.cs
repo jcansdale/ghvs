@@ -358,8 +358,12 @@ Associated pull requests:");
     {
         protected override async Task OnExecute(CommandLineApplication app)
         {
-            var path = System.IO.Path.GetFullPath(Path);
-            await VisualStudioUtilities.EditAsync(path);
+            var fullPath = System.IO.Path.GetFullPath(Path);
+            var opened = await VisualStudioUtilities.OpenAsync(fullPath);
+            if (!opened)
+            {
+                Console.WriteLine($"Couldn't find a running instance of Visual Studio containing:\n{fullPath}");
+            }
         }
 
         [Argument(0, Description = "The path to open")]

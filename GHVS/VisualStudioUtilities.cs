@@ -12,7 +12,7 @@ namespace GHVS
 {
     class VisualStudioUtilities
     {
-        public static Task EditAsync(string path)
+        public static Task<bool> OpenAsync(string path)
         {
             return RetryMessageFilter.Run(() =>
             {
@@ -24,7 +24,10 @@ namespace GHVS
                     }
 
                     BringToFront((IntPtr)dte.MainWindow.HWnd);
+                    return true;
                 }
+
+                return false;
             });
         }
 
