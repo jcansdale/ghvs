@@ -15,7 +15,7 @@ namespace VsixTesting.Utilities
         private readonly IMessageFilter prevFilter;
         private TimeSpan timeout = TimeSpan.FromSeconds(30);
 
-        public static Task Run(Action action)
+        public static Task Run(Action method)
         {
             var tcs = new TaskCompletionSource<object>();
             var thread = new Thread(() =>
@@ -24,10 +24,31 @@ namespace VsixTesting.Utilities
                 {
                     using (new RetryMessageFilter())
                     {
-                        action();
+                        method();
+                        tcs.SetResult(null);
                     }
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            return tcs.Task;
+        }
 
-                    tcs.SetResult(null);
+        public static Task<T> Run<T>(Func<T> method)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    using (new RetryMessageFilter())
+                    {
+                        tcs.SetResult(method());
+                    }
                 }
                 catch (Exception e)
                 {

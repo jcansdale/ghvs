@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using VsixUtil;
 using VsixTesting.Interop;
 using VsixTesting.Utilities;
 
@@ -12,7 +14,54 @@ namespace GHVS
 {
     class VisualStudioUtilities
     {
-        public static Task EditAsync(string path)
+        public static List<string> GetApplicationPaths() =>
+            InstalledVersionUtilities.GetInstalledVersions().Select(iv => iv.ApplicationPath).OrderBy(ap => ap).ToList();
+
+        public static async Task<bool> OpenFileInFolderAsync(string application, string folder, string fullPath, int timeoutSeconds = 10)
+        {
+            using (var process = OpenFolder(application, folder))
+            {
+                for (var t = 0; t < timeoutSeconds; t++)
+                {
+                    if (await OpenAsync(fullPath))
+                    {
+                        return true;
+                    }
+
+                    await Task.Delay(1000);
+                }
+
+                return false;
+            }
+        }
+
+        public static Process OpenFileOrFolder(string application, string fullPath)
+        {
+            if (File.Exists(fullPath))
+            {
+                return OpenFile(application, fullPath);
+            }
+            else if (Directory.Exists(fullPath))
+            {
+                return OpenFolder(application, fullPath);
+            }
+            else
+            {
+                throw new ArgumentException($"Couldn't find file or folder at: {fullPath}");
+            }
+        }
+
+        public static Process OpenFolder(string application, string fullPath)
+        {
+            return Process.Start(application, $"/Command \"File.OpenFolder {fullPath}\"");
+        }
+
+        public static Process OpenFile(string application, string fullPath)
+        {
+            return Process.Start(application, $"/Command \"File.OpenFile {fullPath}\"");
+        }
+
+        public static Task<bool> OpenAsync(string path)
         {
             return RetryMessageFilter.Run(() =>
             {
@@ -24,7 +73,10 @@ namespace GHVS
                     }
 
                     BringToFront((IntPtr)dte.MainWindow.HWnd);
+                    return true;
                 }
+
+                return false;
             });
         }
 

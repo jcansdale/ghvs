@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Octokit.GraphQL;
@@ -353,17 +354,64 @@ Associated pull requests:");
         }
     }
 
-    [Command(Description = "Open a file or directory in Visual Studio")]
+    [Command(Description = "Open a file or folder in Visual Studio")]
     class OpenCommand : GitHubCommandBase
     {
         protected override async Task OnExecute(CommandLineApplication app)
         {
-            var path = System.IO.Path.GetFullPath(Path);
-            await VisualStudioUtilities.EditAsync(path);
+            var fullPath = Path.GetFullPath(FileOrFolder);
+            if (await VisualStudioUtilities.OpenAsync(fullPath))
+            {
+                return;
+            }
+
+            var application = FindApplication();
+            if (application == null)
+            {
+                return;
+            }
+
+            var workingDir = FindWorkingDirectory(fullPath);
+            if (workingDir == null)
+            {
+                VisualStudioUtilities.OpenFileOrFolder(application, fullPath);
+                return;
+            }
+
+            await VisualStudioUtilities.OpenFileInFolderAsync(application, workingDir, fullPath);
+        }
+
+        static string FindWorkingDirectory(string fullPath)
+        {
+            var gitDir = LibGit2Sharp.Repository.Discover(fullPath);
+            if (gitDir == null)
+            {
+                return null;
+            }
+
+            gitDir = gitDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar});
+            return Path.GetDirectoryName(gitDir);
+        }
+
+        static string FindApplication()
+        {
+            Console.WriteLine("Please select an application:");
+            var applications = VisualStudioUtilities.GetApplicationPaths();
+            for (var row = 0; row < applications.Count; row++)
+            {
+                Console.WriteLine($"{row}: {applications[row]}");
+            }
+
+            if(!int.TryParse(Console.ReadLine(), out int selectedRow))
+            {
+                return null;
+            }
+
+            return applications[selectedRow];
         }
 
         [Argument(0, Description = "The path to open")]
-        public string Path { get; set; }
+        public string FileOrFolder { get; set; }
     }
 
     /// <summary>
