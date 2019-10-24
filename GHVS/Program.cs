@@ -404,12 +404,8 @@ Associated pull requests:");
     {
         protected override async Task OnExecute(CommandLineApplication app)
         {
-            var url = Url;
-            var prefix = "x-github-client://openRepo/";
-            if (url.StartsWith(prefix))
-            {
-                url = url.Substring(prefix.Length);
-            }
+            // Handle x-github-client URIs
+            var url = XGitHubClientUtilities.FindGitHubUrl(Url) ?? Url;
 
             var workingDir = await FindWorkingDirectoryForUrl(url);
             if (workingDir != null)
