@@ -21,7 +21,8 @@ namespace GHVS
         typeof(UpstreamCommand),
         typeof(LoginCommand),
         typeof(LogoutCommand),
-        typeof(OpenCommand)
+        typeof(OpenCommand),
+        typeof(OpenUrlCommand)
     )]
     class Program : GitHubCommandBase
     {
@@ -365,7 +366,7 @@ Associated pull requests:");
                 return;
             }
 
-            var application = FindApplication();
+            var application = CommndLineUtilities.FindVisualStudioApplication();
             if (application == null)
             {
                 return;
@@ -389,29 +390,75 @@ Associated pull requests:");
                 return null;
             }
 
-            gitDir = gitDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar});
+            gitDir = gitDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
             return Path.GetDirectoryName(gitDir);
-        }
-
-        static string FindApplication()
-        {
-            Console.WriteLine("Please select an application:");
-            var applications = VisualStudioUtilities.GetApplicationPaths();
-            for (var row = 0; row < applications.Count; row++)
-            {
-                Console.WriteLine($"{row}: {applications[row]}");
-            }
-
-            if(!int.TryParse(Console.ReadLine(), out int selectedRow))
-            {
-                return null;
-            }
-
-            return applications[selectedRow];
         }
 
         [Argument(0, Description = "The path to open")]
         public string FileOrFolder { get; set; }
+    }
+
+
+    [Command(Description = "Open a GitHub URL in Visual Studio")]
+    class OpenUrlCommand : GitHubCommandBase
+    {
+        protected override async Task OnExecute(CommandLineApplication app)
+        {
+            var url = Url;
+            var prefix = "x-github-client://openRepo/";
+            if (url.StartsWith(prefix))
+            {
+                url = url.Substring(prefix.Length);
+            }
+
+            var workingDir = await FindWorkingDirectoryForUrl(url);
+            if (workingDir != null)
+            {
+                await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
+                return;
+            }
+
+            var application = CommndLineUtilities.FindVisualStudioApplication();
+            VisualStudioUtilities.OpenFromUrl(application, url);
+        }
+
+        async Task<string> FindWorkingDirectoryForUrl(UriString targetUrl)
+        {
+
+            var paths = await VisualStudioUtilities.GetSolutionPaths();
+            foreach (var path in paths)
+            {
+                var gitDir = LibGit2Sharp.Repository.Discover(path);
+                if (gitDir == null)
+                {
+                    continue;
+                }
+
+                using (var repository = new LibGit2Sharp.Repository(gitDir))
+                {
+                    var remoteName = repository.Head.RemoteName;
+                    if (remoteName == null)
+                    {
+                        continue;
+                    }
+
+                    using (var remote = repository.Network.Remotes[remoteName])
+                    {
+                        if (UriString.RepositoryUrlsAreEqual(remote.Url, targetUrl))
+                        {
+                            var workingDir = repository.Info.WorkingDirectory;
+                            workingDir = workingDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+                            return workingDir;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        [Argument(0, Description = "The GitHub URL to open")]
+        public string Url { get; set; }
     }
 
     /// <summary>
