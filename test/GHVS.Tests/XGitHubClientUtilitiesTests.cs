@@ -17,5 +17,15 @@ public static class XGitHubClientUtilitiesTests
 
             Assert.That(url?.ToString(), Is.EqualTo(expectUrl));
         }
+
+        [TestCase("https://github.com", "https://github.com")]
+        [TestCase("https://branchname.review-lab.github.com", "https://github.com")]
+        [TestCase("https://branch-name.review-lab.github.com", "https://github.com")]
+        public void IgnoreReviewLab(string url, string expectUrl)
+        {
+            var result = XGitHubClientUtilities.IgnoreReviewLab(url);
+
+            Assert.That(result, Is.EqualTo(expectUrl));
+        }
     }
 }

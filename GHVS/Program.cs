@@ -411,6 +411,9 @@ Associated pull requests:");
             // Handle x-github-client URIs
             var url = XGitHubClientUtilities.FindGitHubUrl(Url) ?? Url;
 
+            // Ignore review-lab part of URL
+            url = XGitHubClientUtilities.IgnoreReviewLab(url);
+
             // Convert PR inline comments to blob URLs
             url = await CommentToBlobUrl(url) ?? url;
 

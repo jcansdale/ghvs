@@ -1,5 +1,6 @@
 ﻿using GitHub.Primitives;
 using System;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace GHVS
@@ -38,13 +39,9 @@ namespace GHVS
             return uri;
         }
 
-        static void go()
+        public static string IgnoreReviewLab(string url)
         {
-            var uri = new Uri("x-github-client://openRepo/https://github.com/github/VisualStudio?branch=master&filepath=README.md");
-
-            var values = HttpUtility.ParseQueryString(uri.Query);
-            Console.WriteLine(values["branch"]);
-            Console.WriteLine(values["filepath"]);
+            return Regex.Replace(url, "//[^.]+.review-lab.", "//");
         }
     }
 }
