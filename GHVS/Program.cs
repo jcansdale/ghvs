@@ -416,14 +416,17 @@ Associated pull requests:");
             url = await GitHubUrlUtilities.CommentToBlobUrl(CreateConnection, url) ?? url;
 
             var workingDir = await FindWorkingDirectoryForUrl(url);
-            if (workingDir != null)
+            if (workingDir == null)
             {
-                await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
+                var application = CommndLineUtilities.FindVisualStudioApplication();
+                VisualStudioUtilities.OpenFromUrl(application, url);
                 return;
             }
 
-            var application = CommndLineUtilities.FindVisualStudioApplication();
-            VisualStudioUtilities.OpenFromUrl(application, url);
+            // Convert diff to blob URLs
+            url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+
+            await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
         }
 
         async Task<string> FindWorkingDirectoryForUrl(UriString targetUrl)
