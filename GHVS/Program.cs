@@ -118,7 +118,7 @@ namespace GHVS
         }
     }
 
-    [Command(Description = "Show visible organizations (requires 'read:org' scope)")]
+    [Command("orgs", Description = "Show visible organizations (requires 'read:org' scope)")]
     class OrganizationsCommand : GitHubCommandBase
     {
         protected override async Task OnExecute(CommandLineApplication app)
@@ -148,7 +148,7 @@ namespace GHVS
         }
     }
 
-    [Command(Description = "List repositories")]
+    [Command("repos", Description = "List repositories")]
     class RepositoriesCommand : GitHubCommandBase
     {
         protected override async Task OnExecute(CommandLineApplication app)
