@@ -1,2 +1,2 @@
-# ghvs
-Navigate between Git, GitHub and Visual Studio
+# GHVS
+Seamless navigation between Git, GitHub and Visual Studio
