@@ -142,7 +142,7 @@ namespace GHVS
             return null;
         }
 
-        static (int Pull, int DatabaseId) FindCommentInfo(string url)
+        public static (int Pull, int DatabaseId) FindCommentInfo(string url)
         {
             var uri = new UriString(url);
 

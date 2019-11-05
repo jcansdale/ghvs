@@ -17,6 +17,18 @@ public static class GitHubUrlUtilitiesTests
         }
     }
 
+    public class TheFindCommentInfoMethod
+    {
+        [TestCase("https://github.com/jcansdale/ghvs/pull/3", 0, 0)]
+        [TestCase("https://github.com/jcansdale/ghvs/pull/3#discussion_r342457357", 3, 342457357)]
+        public void FindCommentInfo(string url, int expectPull, int expectDatabaseId)
+        {
+            var result = GitHubUrlUtilities.FindCommentInfo(url);
+
+            Assert.That(result, Is.EqualTo((expectPull, expectDatabaseId)));
+        }
+    }
+
     public class TheToMd5Method
     {
         [TestCase("GHVS.sln", "aab415af81102bd330b705fb25c2a199")]
