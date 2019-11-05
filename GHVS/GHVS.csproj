@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
+    <PackageId>ghvs</PackageId>
     <ToolCommandName>ghvs</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
