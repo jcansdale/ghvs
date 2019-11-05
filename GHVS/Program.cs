@@ -143,7 +143,7 @@ namespace GHVS
 
             foreach (var o in result)
             {
-                Console.WriteLine($"{o.Login} has {o.Repositories} repositories, {o.Members} members, {o.Teams} teams and {o.Projects}");
+                Console.WriteLine($"{o.Login} has {o.Repositories} repositories, {o.Members} members, {o.Teams} teams and {o.Projects} projects");
             }
         }
     }
