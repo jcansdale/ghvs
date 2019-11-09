@@ -9,6 +9,8 @@ using GitHub.Models;
 using GitHub.Primitives;
 using Microsoft.Alm.Authentication;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Win32;
+using EnvDTE;
 
 namespace GHVS
 {
@@ -24,7 +26,9 @@ namespace GHVS
         typeof(LoginCommand),
         typeof(LogoutCommand),
         typeof(OpenCommand),
-        typeof(OpenUrlCommand)
+        typeof(OpenUrlCommand),
+        typeof(InstallCommand),
+        typeof(UninstallCommand)
     )]
     class Program : GitHubCommandBase
     {
@@ -466,6 +470,39 @@ Associated pull requests:");
 
         [Argument(0, Description = "The GitHub URL to open")]
         public string Url { get; set; }
+    }
+
+    [Command(Description = "Install 'x-github-client' protocol handler")]
+    class InstallCommand : GitHubCommandBase
+    {
+        protected override Task OnExecute(CommandLineApplication app)
+        {
+            var exeFile = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            var commandLine = $"\"{exeFile}\" open-url \"%1\"";
+
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client", null, "GitHub Protocol Handler");
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client", "URL Protocol", "");
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client\shell\Open\Command", null, commandLine);
+
+            return Task.CompletedTask;
+        }
+    }
+
+    [Command(Description = "Uninstall 'x-github-client' protocol handler")]
+    class UninstallCommand : GitHubCommandBase
+    {
+        protected override Task OnExecute(CommandLineApplication app)
+        {
+            using (var registryKey = Registry.CurrentUser.OpenSubKey(@"Software\Classes", true))
+            {
+                registryKey.DeleteSubKey(@"x-github-client\shell\Open\Command", false);
+                registryKey.DeleteSubKey(@"x-github-client\shell\Open", false);
+                registryKey.DeleteSubKey(@"x-github-client\shell", false);
+                registryKey.DeleteSubKey(@"x-github-client", false);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     /// <summary>
