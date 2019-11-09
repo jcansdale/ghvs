@@ -484,6 +484,12 @@ Associated pull requests:");
             Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client", "URL Protocol", "");
             Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client\shell\Open\Command", null, commandLine);
 
+            Console.WriteLine("A protocol handler for 'x-github-client' URIs was installed.");
+            Console.WriteLine();
+            Console.WriteLine("Please add an 'Open in Editor' bookmarklet to your browser with the following:");
+            Console.WriteLine("javascript:window.location.href='x-github-client://openRepo/'+window.location.href");
+            Console.WriteLine();
+
             return Task.CompletedTask;
         }
     }
