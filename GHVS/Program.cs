@@ -367,6 +367,21 @@ Associated pull requests:");
         protected override async Task OnExecute(CommandLineApplication app)
         {
             var fullPath = Path.GetFullPath(FileOrFolder);
+
+            if (Code)
+            {
+                if (FindWorkingDirectory(fullPath) is string wd)
+                {
+                    VSCodeUtilities.OpenFileInFolder(wd, fullPath);
+                }
+                else
+                {
+                    VSCodeUtilities.OpenFileOrFolder(fullPath);
+                }
+
+                return;
+            }
+
             if (await VisualStudioUtilities.OpenAsync(fullPath))
             {
                 return;
@@ -402,8 +417,10 @@ Associated pull requests:");
 
         [Argument(0, Description = "The path to open")]
         public string FileOrFolder { get; set; }
-    }
 
+        [Option(Description = "Open in VSCode")]
+        public bool Code { get; set; }
+    }
 
     [Command(Description = "Open a GitHub URL in Visual Studio")]
     class OpenUrlCommand : GitHubCommandBase
