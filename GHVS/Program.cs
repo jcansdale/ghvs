@@ -2,10 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
-using GitHub.Models;
 using GitHub.Primitives;
 using Microsoft.Alm.Authentication;
 using McMaster.Extensions.CommandLineUtils;
