@@ -29,7 +29,7 @@ namespace GHVS
         typeof(InstallCommand),
         typeof(UninstallCommand)
     )]
-    class Program : GitHubCommandBase
+    public class Program : GitHubCommandBase
     {
         public static Task Main(string[] args) =>
             CommandLineApplication.ExecuteAsync<Program>(args);
@@ -530,7 +530,7 @@ Associated pull requests:");
     /// will automatically support '--help'
     /// </summary>
     [HelpOption("--help")]
-    abstract class GitHubCommandBase
+    public abstract class GitHubCommandBase
     {
         protected abstract Task OnExecute(CommandLineApplication app);
 
