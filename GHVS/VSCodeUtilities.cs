@@ -4,11 +4,24 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using GitHub.Primitives;
 using GitHub.Services;
+using Microsoft.Win32;
 
 namespace GHVS
 {
     class VSCodeUtilities
     {
+        public static IEnumerable<string> FindApplicationPaths()
+        {
+            if (Registry.GetValue(@"HKEY_CLASSES_ROOT\Applications\Code.exe\shell\open\command", null, null) is string commandLine)
+            {
+                var args = ProcessUtilities.SplitArgs(commandLine);
+                if (args.Length > 1)
+                {
+                    yield return args[0];
+                }
+            }
+        }
+
         public static bool OpenFromUrl(string repositoryDir, UriString targetUrl)
         {
             if (GitHubContextUtilities.FindContextFromUrl(targetUrl) is GitHubContext context && context.LinkType == LinkType.Blob)

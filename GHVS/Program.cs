@@ -386,20 +386,8 @@ Associated pull requests:");
                 return;
             }
 
-            var application = CommndLineUtilities.FindVisualStudioApplication();
-            if (application == null)
-            {
-                return;
-            }
-
             var workingDir = FindWorkingDirectory(fullPath);
-            if (workingDir == null)
-            {
-                VisualStudioUtilities.OpenFileOrFolder(application, fullPath);
-                return;
-            }
-
-            await VisualStudioUtilities.OpenFileInFolderAsync(application, workingDir, fullPath);
+            await CommndLineUtilities.OpenFileInFolderAsync(workingDir, fullPath);
         }
 
         static string FindWorkingDirectory(string fullPath)
@@ -457,11 +445,7 @@ Associated pull requests:");
                 return;
             }
 
-            // Start new Visual Studio instance
-            var application = CommndLineUtilities.FindVisualStudioApplication();
-            VisualStudioUtilities.OpenFromUrl(application, url);
-            return;
-
+            CommndLineUtilities.OpenFromUrl(url);
         }
 
         static string FindWorkingDirectoryForUrl(IEnumerable<string> paths, UriString targetUrl)
