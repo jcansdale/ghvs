@@ -2,20 +2,38 @@
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
+using GitHub.Primitives;
+using GitHub.Services;
 
 namespace GHVS
 {
     class VSCodeUtilities
     {
-        public static Process OpenFileInFolder(string folder, string path)
+        public static bool OpenFromUrl(string repositoryDir, UriString targetUrl)
         {
+            if (GitHubContextUtilities.FindContextFromUrl(targetUrl) is GitHubContext context && context.LinkType == LinkType.Blob)
+            {
+                var (_, path, _) = GitHubContextUtilities.ResolveBlob(repositoryDir, context);
+                if(path != null)
+                {
+                    OpenFileInFolder(repositoryDir, path, context.Line);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static Process OpenFileInFolder(string folder, string path, int? line = null)
+        {
+            var gotoPath = line != null ? $"{path}:{line}" : path;
             var startInfo = new ProcessStartInfo
             {
                 WorkingDirectory = folder,
                 UseShellExecute = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = "code",
-                Arguments = $". -g \"{path}\""
+                Arguments = $". -g \"{gotoPath}\""
             };
 
             return Process.Start(startInfo);

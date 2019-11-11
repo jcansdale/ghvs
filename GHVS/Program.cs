@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using GitHub.Primitives;
@@ -434,24 +435,37 @@ Associated pull requests:");
             // Convert PR inline comments to blob URLs
             url = await GitHubUrlUtilities.CommentToBlobUrl(CreateConnection, url) ?? url;
 
-            var workingDir = await FindWorkingDirectoryForUrl(url);
-            if (workingDir == null)
+            // Use live Visual Studio instance
+            var solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
+            var workingDir = FindWorkingDirectoryForUrl(solutionPaths, url);
+            if (workingDir != null)
             {
-                var application = CommndLineUtilities.FindVisualStudioApplication();
-                VisualStudioUtilities.OpenFromUrl(application, url);
+                // Convert diff to blob URLs
+                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
                 return;
             }
 
-            // Convert diff to blob URLs
-            url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+            // Use live VSCode instance
+            var codeFolders = VSCodeUtilities.GetFolders();
+            workingDir = FindWorkingDirectoryForUrl(codeFolders, url);
+            if (workingDir != null)
+            {
+                // Convert diff to blob URLs
+                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                VSCodeUtilities.OpenFromUrl(workingDir, url);
+                return;
+            }
 
-            await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
+            // Start new Visual Studio instance
+            var application = CommndLineUtilities.FindVisualStudioApplication();
+            VisualStudioUtilities.OpenFromUrl(application, url);
+            return;
+
         }
 
-        async Task<string> FindWorkingDirectoryForUrl(UriString targetUrl)
+        static string FindWorkingDirectoryForUrl(IEnumerable<string> paths, UriString targetUrl)
         {
-
-            var paths = await VisualStudioUtilities.GetSolutionPaths();
             foreach (var path in paths)
             {
                 var gitDir = LibGit2Sharp.Repository.Discover(path);
