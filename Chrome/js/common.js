@@ -4,7 +4,7 @@ function createOpenEditorButton(pullRequestWebUrl)
 	openEditorButton.setAttribute("id", "ghvs");
 	openEditorButton.href = 'x-github-client://openRepo/' + pullRequestWebUrl;
 	openEditorButton.setAttribute("class", "btn");
-    var textNode = document.createTextNode("Open in Editor");
+    var textNode = document.createTextNode("Open editor");
 	openEditorButton.appendChild(textNode);
 	
 	return openEditorButton;
