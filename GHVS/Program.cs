@@ -468,7 +468,10 @@ Associated pull requests:");
 
                     using (var remote = repository.Network.Remotes[remoteName])
                     {
-                        if (UriString.RepositoryUrlsAreEqual(remote.Url, targetUrl))
+                        var remoteUrl = new UriString(remote.Url);
+                        if (UriString.RepositoryUrlsAreEqual(remoteUrl, targetUrl) ||
+                            // HACK: Match forks when the repository name is the same!
+                            string.Equals(remoteUrl.RepositoryName, targetUrl.RepositoryName, StringComparison.OrdinalIgnoreCase))
                         {
                             var workingDir = repository.Info.WorkingDirectory;
                             workingDir = workingDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
