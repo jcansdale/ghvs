@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using GHVS.Helpers;
 
 namespace GHVS
 {
@@ -66,6 +67,7 @@ namespace GHVS
 
         public static string FindVisualStudioApplication()
         {
+            WinConsole.Initialize();
             Console.WriteLine("Please select an application:");
             var applications = VisualStudioUtilities.GetApplicationPaths()
                 .Concat(VSCodeUtilities.FindApplicationPaths())
