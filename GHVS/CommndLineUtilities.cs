@@ -52,7 +52,7 @@ namespace GHVS
 
             if (IsCode(application))
             {
-                Console.WriteLine("Opening GitHub URLs in VSCode isn't currently supported");
+                VSCodeUtilities.OpenFromUrl(url);
             }
             else
             {
