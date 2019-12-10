@@ -52,6 +52,18 @@ namespace GHVS
             return Process.Start(startInfo);
         }
 
+        public static void OpenFromUrl(string url)
+        {
+            var repositoryUrl = new UriString(url).ToRepositoryUrl();
+            var vscodeUri = $"vscode://vscode.git/clone?url={repositoryUrl}";
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName= vscodeUri,
+                UseShellExecute = true
+            });
+        }
+
         public static Process OpenFileOrFolder(string path)
         {
             var startInfo = new ProcessStartInfo
