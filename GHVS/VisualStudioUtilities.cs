@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using VsixUtil;
 using VsixTesting.Interop;
 using VsixTesting.Utilities;
+using GitHub.Primitives;
 
 namespace GHVS
 {
@@ -67,16 +68,51 @@ namespace GHVS
             {
                 foreach (var dte in GetDTEsForPath(path))
                 {
+                    BringToFront((IntPtr)dte.MainWindow.HWnd);
+
                     if (File.Exists(path))
                     {
                         dte.ItemOperations.OpenFile(path);
                     }
 
-                    BringToFront((IntPtr)dte.MainWindow.HWnd);
                     return true;
                 }
 
                 return false;
+            });
+        }
+
+        public static Task OpenFromUrlAsync(string path, UriString targetUrl)
+        {
+            return RetryMessageFilter.Run(() =>
+            {
+                foreach (var dte in GetDTEsForPath(path))
+                {
+                    BringToFront((IntPtr)dte.MainWindow.HWnd);
+                    dte.ExecuteCommand("GitHub.OpenFromUrl", targetUrl);
+                    return true;
+                }
+
+                return false;
+            });
+        }
+
+        public static Process OpenFromUrl(string application, string url)
+        {
+            return Process.Start(application, $"/Command \"GitHub.OpenFromUrl {url}\"");
+        }
+
+        public static Task<IList<string>> GetSolutionPaths()
+        {
+            return RetryMessageFilter.Run<IList<string>>(() =>
+            {
+                var solutionPaths = new List<string>();
+                foreach (var dte in GetDTEs())
+                {
+                    solutionPaths.Add(dte.Solution.FullName);
+                }
+
+                return solutionPaths;
             });
         }
 

@@ -1,0 +1,30 @@
+{
+	"manifest_version": 2,
+	"name": "Git, GitHub and Visual Studio",
+	"short_name": "GHVS",
+	"author": "Jamie Cansdale",
+	"version": "0.1",
+	"description": "Seamless navigation between Git, GitHub and Visual Studio",
+	"background": 
+	{
+		"scripts": ["background.js"]
+	},
+	"permissions": 
+	[
+		"https://github.com/*",
+		"tabs", 
+		"webNavigation"
+	],
+	"content_scripts":
+	[
+		{
+			"matches": ["https://github.com/*/*/pull/*"],
+			"js": 
+			[
+				"js/common.js",
+				"js/pullrequest.js"
+			],
+			"run_at": "document_end"
+		}
+	]
+}

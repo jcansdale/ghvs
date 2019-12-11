@@ -49,8 +49,9 @@ namespace GHVS
                 FileName = "git",
                 Arguments = $"credential {command}",
                 UseShellExecute = false,
+                CreateNoWindow = true,
                 RedirectStandardInput = true,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = true
             };
 
             startInfo.Environment["GCM_AUTHORITY"] = "GitHub";

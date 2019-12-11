@@ -2,11 +2,14 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Octokit.GraphQL;
 using Octokit.GraphQL.Model;
 using GitHub.Primitives;
 using Microsoft.Alm.Authentication;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Win32;
+using EnvDTE;
 
 namespace GHVS
 {
@@ -21,9 +24,12 @@ namespace GHVS
         typeof(UpstreamCommand),
         typeof(LoginCommand),
         typeof(LogoutCommand),
-        typeof(OpenCommand)
+        typeof(OpenCommand),
+        typeof(OpenUrlCommand),
+        typeof(InstallCommand),
+        typeof(UninstallCommand)
     )]
-    class Program : GitHubCommandBase
+    public class Program : GitHubCommandBase
     {
         public static Task Main(string[] args) =>
             CommandLineApplication.ExecuteAsync<Program>(args);
@@ -380,20 +386,8 @@ Associated pull requests:");
                 return;
             }
 
-            var application = FindApplication();
-            if (application == null)
-            {
-                return;
-            }
-
             var workingDir = FindWorkingDirectory(fullPath);
-            if (workingDir == null)
-            {
-                VisualStudioUtilities.OpenFileOrFolder(application, fullPath);
-                return;
-            }
-
-            await VisualStudioUtilities.OpenFileInFolderAsync(application, workingDir, fullPath);
+            await CommndLineUtilities.OpenFileInFolderAsync(workingDir, fullPath);
         }
 
         static string FindWorkingDirectory(string fullPath)
@@ -404,25 +398,8 @@ Associated pull requests:");
                 return null;
             }
 
-            gitDir = gitDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar});
+            gitDir = gitDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
             return Path.GetDirectoryName(gitDir);
-        }
-
-        static string FindApplication()
-        {
-            Console.WriteLine("Please select an application:");
-            var applications = VisualStudioUtilities.GetApplicationPaths();
-            for (var row = 0; row < applications.Count; row++)
-            {
-                Console.WriteLine($"{row}: {applications[row]}");
-            }
-
-            if(!int.TryParse(Console.ReadLine(), out int selectedRow))
-            {
-                return null;
-            }
-
-            return applications[selectedRow];
         }
 
         [Argument(0, Description = "The path to open")]
@@ -432,17 +409,135 @@ Associated pull requests:");
         public bool Code { get; set; }
     }
 
+    [Command(Description = "Open a GitHub URL in Visual Studio")]
+    class OpenUrlCommand : GitHubCommandBase
+    {
+        protected override async Task OnExecute(CommandLineApplication app)
+        {
+            // Handle x-github-client URIs
+            var url = XGitHubClientUtilities.FindGitHubUrl(Url) ?? Url;
+
+            // Ignore review-lab part of URL
+            url = XGitHubClientUtilities.IgnoreReviewLab(url);
+
+            // Convert PR inline comments to blob URLs
+            url = await GitHubUrlUtilities.CommentToBlobUrl(CreateConnection, url) ?? url;
+
+            // Use live Visual Studio instance
+            var solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
+            var workingDir = FindWorkingDirectoryForUrl(solutionPaths, url);
+            if (workingDir != null)
+            {
+                // Convert diff to blob URLs
+                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
+                return;
+            }
+
+            // Use live VSCode instance
+            var codeFolders = VSCodeUtilities.GetFolders();
+            workingDir = FindWorkingDirectoryForUrl(codeFolders, url);
+            if (workingDir != null)
+            {
+                // Convert diff to blob URLs
+                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                VSCodeUtilities.OpenFromUrl(workingDir, url);
+                return;
+            }
+
+            CommndLineUtilities.OpenFromUrl(url);
+        }
+
+        static string FindWorkingDirectoryForUrl(IEnumerable<string> paths, UriString targetUrl)
+        {
+            foreach (var path in paths)
+            {
+                var gitDir = LibGit2Sharp.Repository.Discover(path);
+                if (gitDir == null)
+                {
+                    continue;
+                }
+
+                using (var repository = new LibGit2Sharp.Repository(gitDir))
+                {
+                    var remoteName = repository.Head.RemoteName;
+                    if (remoteName == null)
+                    {
+                        continue;
+                    }
+
+                    using (var remote = repository.Network.Remotes[remoteName])
+                    {
+                        var remoteUrl = new UriString(remote.Url);
+                        if (UriString.RepositoryUrlsAreEqual(remoteUrl, targetUrl) ||
+                            // HACK: Match forks when the repository name is the same!
+                            string.Equals(remoteUrl.RepositoryName, targetUrl.RepositoryName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var workingDir = repository.Info.WorkingDirectory;
+                            workingDir = workingDir.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+                            return workingDir;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        [Argument(0, Description = "The GitHub URL to open")]
+        public string Url { get; set; }
+    }
+
+    [Command(Description = "Install 'x-github-client' protocol handler")]
+    class InstallCommand : GitHubCommandBase
+    {
+        protected override Task OnExecute(CommandLineApplication app)
+        {
+            var exeFile = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            var commandLine = $"\"{exeFile}\" open-url \"%1\"";
+
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client", null, "GitHub Protocol Handler");
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client", "URL Protocol", "");
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\x-github-client\shell\Open\Command", null, commandLine);
+
+            Console.WriteLine("A protocol handler for 'x-github-client' URIs was installed.");
+            Console.WriteLine();
+            Console.WriteLine("Please add an 'Open in Editor' bookmarklet to your browser with the following:");
+            Console.WriteLine("javascript:window.location.href='x-github-client://openRepo/'+window.location.href");
+            Console.WriteLine();
+
+            return Task.CompletedTask;
+        }
+    }
+
+    [Command(Description = "Uninstall 'x-github-client' protocol handler")]
+    class UninstallCommand : GitHubCommandBase
+    {
+        protected override Task OnExecute(CommandLineApplication app)
+        {
+            using (var registryKey = Registry.CurrentUser.OpenSubKey(@"Software\Classes", true))
+            {
+                registryKey.DeleteSubKey(@"x-github-client\shell\Open\Command", false);
+                registryKey.DeleteSubKey(@"x-github-client\shell\Open", false);
+                registryKey.DeleteSubKey(@"x-github-client\shell", false);
+                registryKey.DeleteSubKey(@"x-github-client", false);
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
     /// <summary>
     /// This base type provides shared functionality.
     /// Also, declaring <see cref="HelpOptionAttribute"/> on this type means all types that inherit from it
     /// will automatically support '--help'
     /// </summary>
     [HelpOption("--help")]
-    abstract class GitHubCommandBase
+    public abstract class GitHubCommandBase
     {
         protected abstract Task OnExecute(CommandLineApplication app);
 
-        protected Connection CreateConnection(string host = null)
+        protected IConnection CreateConnection(string host = null)
         {
             host = Host ?? host ?? "https://github.com";
 

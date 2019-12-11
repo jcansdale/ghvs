@@ -10,6 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GHVS", "GHVS\GHVS.csproj", "{DD230568-EE20-4B6C-B113-95ACBBBD4A12}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GHVS.Tests", "test\GHVS.Tests\GHVS.Tests.csproj", "{3A87B1FC-5F1B-40AD-9F07-3B3B061B006E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GHVS.Gui", "GHVS.Gui\GHVS.Gui.csproj", "{3F26C815-4B66-4B55-9764-5BB8DC0B4F42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +24,14 @@ Global
 		{DD230568-EE20-4B6C-B113-95ACBBBD4A12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD230568-EE20-4B6C-B113-95ACBBBD4A12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD230568-EE20-4B6C-B113-95ACBBBD4A12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A87B1FC-5F1B-40AD-9F07-3B3B061B006E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A87B1FC-5F1B-40AD-9F07-3B3B061B006E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A87B1FC-5F1B-40AD-9F07-3B3B061B006E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A87B1FC-5F1B-40AD-9F07-3B3B061B006E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F26C815-4B66-4B55-9764-5BB8DC0B4F42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F26C815-4B66-4B55-9764-5BB8DC0B4F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F26C815-4B66-4B55-9764-5BB8DC0B4F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F26C815-4B66-4B55-9764-5BB8DC0B4F42}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
