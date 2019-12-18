@@ -557,6 +557,14 @@ Associated pull requests:");
                 case SecretStores.Credential:
                     // Use the built in credential store
                     var userPass = CredentialManager.Fill(new Uri(targetUrl));
+
+                    // Experimental VS Online support
+                    if(userPass.Password == "x-oauth-basic")
+                    {
+                        Console.WriteLine("Password was 'x-oauth-basic'");
+                        return userPass.Username;
+                    }
+
                     if (userPass.Username != null)
                     {
                         return userPass.Password;
