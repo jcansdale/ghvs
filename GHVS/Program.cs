@@ -423,8 +423,17 @@ Associated pull requests:");
             // Convert PR inline comments to blob URLs
             url = await GitHubUrlUtilities.CommentToBlobUrl(CreateConnection, url) ?? url;
 
-            // Use live Visual Studio instance
-            var solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
+            IList<string> solutionPaths;
+            try
+            {
+                // Use live Visual Studio instance
+                solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
+            }
+            catch(PlatformNotSupportedException)
+            {
+                solutionPaths = Array.Empty<string>();
+            }
+
             var workingDir = FindWorkingDirectoryForUrl(solutionPaths, url);
             if (workingDir != null)
             {
@@ -434,8 +443,19 @@ Associated pull requests:");
                 return;
             }
 
-            // Use live VSCode instance
-            var codeFolders = VSCodeUtilities.GetFolders();
+            IList<string> codeFolders;
+            try
+            {
+                // Use live VSCode instance
+                codeFolders = VSCodeUtilities.GetFolders().ToList();
+            }
+            catch(DllNotFoundException)
+            {
+                codeFolders = new List<string>();
+            }
+
+            codeFolders.Add(Directory.GetCurrentDirectory());
+
             workingDir = FindWorkingDirectoryForUrl(codeFolders, url);
             if (workingDir != null)
             {
