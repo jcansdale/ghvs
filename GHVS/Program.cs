@@ -562,7 +562,6 @@ Associated pull requests:");
                     // Experimental VS Online support
                     if(userPass.Password == "x-oauth-basic")
                     {
-                        Console.WriteLine("Password was 'x-oauth-basic'");
                         return userPass.Username;
                     }
 
