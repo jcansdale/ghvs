@@ -169,9 +169,10 @@ namespace GHVS
                 owner = await connection.Run(loginQuery);
             }
 
+            var affiliations = new RepositoryAffiliation?[] { RepositoryAffiliation.Owner };
             var query = new Query()
                 .RepositoryOwner(owner)
-                .Repositories(first: 100)
+                .Repositories(first: 100, affiliations: affiliations, ownerAffiliations: affiliations)
                 .Nodes
                 .Select(r => new { r.Name, r.IsPrivate, ForkedFrom = r.Parent != null ? r.Parent.NameWithOwner : null })
                 .Compile();
