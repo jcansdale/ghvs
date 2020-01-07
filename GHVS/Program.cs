@@ -158,24 +158,20 @@ namespace GHVS
         {
             var connection = CreateConnection();
 
-            var owner = Owner;
-            if (owner is null)
-            {
-                var loginQuery = new Query()
-                    .Viewer
-                    .Select(v => v.Login)
-                    .Compile();
-
-                owner = await connection.Run(loginQuery);
-            }
-
             var affiliations = new RepositoryAffiliation?[] { RepositoryAffiliation.Owner };
-            var query = new Query()
-                .RepositoryOwner(owner)
-                .Repositories(first: 100, affiliations: affiliations, ownerAffiliations: affiliations)
-                .Nodes
-                .Select(r => new { r.Name, r.IsPrivate, ForkedFrom = r.Parent != null ? r.Parent.NameWithOwner : null })
-                .Compile();
+
+            var repositories = Owner is string owner
+                ? new Query()
+                    .RepositoryOwner(owner)
+                    .Repositories(first: 100, affiliations: affiliations, ownerAffiliations: affiliations)
+                : new Query()
+                    .Viewer
+                    .Repositories(first: 100, affiliations: affiliations, ownerAffiliations: affiliations);
+
+            var query = repositories
+                    .Nodes
+                    .Select(r => new { r.Name, r.IsPrivate, ForkedFrom = r.Parent != null ? r.Parent.NameWithOwner : null })
+                    .Compile();
 
             var result = await connection.Run(query);
 
@@ -552,6 +548,11 @@ Associated pull requests:");
 
         protected string GetToken(string url)
         {
+            if (AccessToken is string accessToken)
+            {
+                return accessToken;
+            }
+
             var targetUrl = new Uri(url).GetLeftPart(UriPartial.Authority);
             switch (SecretStore)
             {
@@ -594,6 +595,9 @@ Associated pull requests:");
 
         [Option("--host", Description = "The host URL")]
         public string Host { get; }
+
+        [Option("--access-token", Description = "The access token to use")]
+        public string AccessToken { get; }
 
         [Option("--secret-store", Description = "The secret store to use (Git or GHfVS)")]
         public SecretStores SecretStore { get; } = SecretStores.Credential;
