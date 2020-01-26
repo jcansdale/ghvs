@@ -56,6 +56,10 @@ namespace GHVS
 
             startInfo.Environment["GCM_AUTHORITY"] = "GitHub";
 
+            // The `credential.authority` and `GCM_AUTHORITY` settings are deprecated.
+            // See https://aka.ms/gcmcore-authority for more information.
+            startInfo.Environment["GCM_PROVIDER"] = "github"; // Required by 
+
             using (var process = Process.Start(startInfo))
             {
                 foreach (var property in inputProperties)
