@@ -29,6 +29,7 @@ jobs:
     - name: Package
       run: dotnet pack
     - name: Publish to nuget.org
-      run: dotnet nuget push GHVS\nupkg\*.nupkg --source nuget.org -k ${{ secrets.NUGET_TOKEN }}
+      shell: bash
+      run: dotnet nuget push $(ls GHVS\nupkg\*.nupkg) --source nuget.org -k ${{ secrets.NUGET_TOKEN }}
     - name: Publish to GitHub
       run: dotnet nuget push GHVS\nupkg\*.nupkg --source https://nuget.pkg.github.com/jcansdale/index.json
