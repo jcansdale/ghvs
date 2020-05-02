@@ -17,9 +17,22 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
+        source-url: https://nuget.pkg.github.com/jcansdale/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Install dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+    - name: Package
+      run: dotnet pack
+    - name: Publish to nuget.org
+      shell: bash
+      run: dotnet nuget push $(ls GHVS/nupkg/*.nupkg) --source nuget.org -k ${{ secrets.NUGET_TOKEN }}
+    - name: Publish to GitHub using gpr tool
+      shell: bash
+      run: |
+        dotnet tool update gpr --tool-path tools
+        tools/gpr push $(ls GHVS/nupkg/*.nupkg) -k ${{secrets.GITHUB_TOKEN}}
