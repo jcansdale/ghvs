@@ -31,8 +31,16 @@ namespace GHVS
     )]
     public class Program : GitHubCommandBase
     {
-        public static Task Main(string[] args) =>
-            CommandLineApplication.ExecuteAsync<Program>(args);
+        public static Task Main(string[] args)
+        {
+            // If single arg is file or dir then implicitly use open
+            if (args.Length == 1 && args[0] is string path && (File.Exists(path) || Directory.Exists(path)))
+            {
+                args = args.Prepend("open").ToArray();
+            }
+
+            return CommandLineApplication.ExecuteAsync<Program>(args);
+        }
 
         protected override Task OnExecute(CommandLineApplication app)
         {
