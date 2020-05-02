@@ -374,18 +374,33 @@ Associated pull requests:");
 
             if (Code)
             {
-                if (FindWorkingDirectory(fullPath) is string wd)
-                {
-                    VSCodeUtilities.OpenFileInFolder(wd, fullPath);
-                }
-                else
-                {
-                    VSCodeUtilities.OpenFileOrFolder(fullPath);
-                }
-
+                OpenVSCode(fullPath);
                 return;
             }
 
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                OpenVSCode(fullPath);
+                return;
+            }
+
+            await OpenVSCodeOrVisualStudio(fullPath);
+        }
+
+        static void OpenVSCode(string fullPath)
+        {
+            if (FindWorkingDirectory(fullPath) is string wd)
+            {
+                VSCodeUtilities.OpenFileInFolder(wd, fullPath);
+            }
+            else
+            {
+                VSCodeUtilities.OpenFileOrFolder(fullPath);
+            }
+        }
+
+        async Task OpenVSCodeOrVisualStudio(string fullPath)
+        {
             if (await VisualStudioUtilities.OpenAsync(fullPath))
             {
                 return;
