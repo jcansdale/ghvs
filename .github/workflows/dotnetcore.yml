@@ -16,8 +16,9 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
     - uses: aarnott/nbgv@v0.3
-      id: nbgv
-    - run: echo 'SemVer2: ${{ steps.nbgv.outputs.SemVer2 }}'
+      with:
+        setAllVars: true
+    - run: echo "NBGV_SemVer2 $NBGV_SemVer2"
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
