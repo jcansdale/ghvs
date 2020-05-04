@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <RepositoryUrl>https://github.com/jcansdale/ghvs</RepositoryUrl>
     <PackAsTool>true</PackAsTool>
     <PackageId>ghvs</PackageId>
     <ToolCommandName>ghvs</ToolCommandName>
