@@ -409,6 +409,12 @@ Associated pull requests:");
 
         static async Task OpenVisualStudioAsync(string fullPath)
         {
+            // Try reusing running instance
+            if (await VisualStudioUtilities.OpenAsync(fullPath))
+            {
+                return;
+            }
+
             var application = VisualStudioUtilities.GetApplicationPaths().Last();   // HACK: What if there are none?
             if (FindWorkingDirectory(fullPath) is string wd)
             {
