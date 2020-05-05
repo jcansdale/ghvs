@@ -36,7 +36,9 @@ namespace GHVS
             // If single arg is file or dir then implicitly use open
             if (args.Length == 1 && args[0] is string path && (File.Exists(path) || Directory.Exists(path)))
             {
-                args = args.Prepend("open").ToArray();
+                var isWindows = Environment.OSVersion.Platform != PlatformID.Win32NT;
+                var editor = isWindows ? "--vs" : "--code";
+                args = args.Prepend("open").Append(editor).ToArray();
             }
 
             return CommandLineApplication.ExecuteAsync<Program>(args);
@@ -384,6 +386,12 @@ Associated pull requests:");
                 return;
             }
 
+            if (VS)
+            {
+                await OpenVisualStudioAsync(fullPath);
+                return;
+            }
+
             await OpenVSCodeOrVisualStudio(fullPath);
         }
 
@@ -396,6 +404,19 @@ Associated pull requests:");
             else
             {
                 VSCodeUtilities.OpenFileOrFolder(fullPath);
+            }
+        }
+
+        static async Task OpenVisualStudioAsync(string fullPath)
+        {
+            var application = VisualStudioUtilities.GetApplicationPaths().Last();   // HACK: What if there are none?
+            if (FindWorkingDirectory(fullPath) is string wd)
+            {
+                await VisualStudioUtilities.OpenFileInFolderAsync(application, wd, fullPath);
+            }
+            else
+            {
+                VisualStudioUtilities.OpenFileOrFolder(application, fullPath);
             }
         }
 
@@ -427,6 +448,9 @@ Associated pull requests:");
 
         [Option(Description = "Open in VSCode")]
         public bool Code { get; set; }
+
+        [Option(Description = "Open in Visual Studio")]
+        public bool VS { get; set; }
     }
 
     [Command(Description = "Open a GitHub URL in Visual Studio")]
