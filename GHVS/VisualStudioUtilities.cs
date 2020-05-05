@@ -16,7 +16,10 @@ namespace GHVS
     class VisualStudioUtilities
     {
         public static List<string> GetApplicationPaths() =>
-            InstalledVersionUtilities.GetInstalledVersions().Select(iv => iv.ApplicationPath).OrderBy(ap => ap).ToList();
+            InstalledVersionUtilities.GetInstalledVersions()
+                .Select(iv => iv.ApplicationPath)
+                .Where(ap => Path.GetFileName(ap) == "devenv.exe")
+                .OrderBy(ap => ap).ToList();
 
         public static async Task<bool> OpenFileInFolderAsync(string application, string folder, string fullPath, int timeoutSeconds = 10)
         {
