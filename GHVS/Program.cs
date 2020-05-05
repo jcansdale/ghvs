@@ -36,7 +36,7 @@ namespace GHVS
             // If single arg is file or dir then implicitly use open
             if (args.Length == 1 && args[0] is string path && (File.Exists(path) || Directory.Exists(path)))
             {
-                var isWindows = Environment.OSVersion.Platform != PlatformID.Win32NT;
+                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
                 var editor = isWindows ? "--vs" : "--code";
                 args = args.Prepend("open").Append(editor).ToArray();
             }
