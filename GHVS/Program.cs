@@ -41,6 +41,12 @@ namespace GHVS
                 args = args.Prepend("open").Append(editor).ToArray();
             }
 
+            // If single arg starts with "https://" then implicitly use open-url
+            if (args.Length == 1 && args[0] is string url && url.StartsWith("https://"))
+            {
+                args = args.Prepend("open-url").ToArray();
+            }
+
             return CommandLineApplication.ExecuteAsync<Program>(args);
         }
 
