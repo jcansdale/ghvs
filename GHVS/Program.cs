@@ -473,29 +473,48 @@ Associated pull requests:");
             // Convert PR inline comments to blob URLs
             url = await GitHubUrlUtilities.CommentToBlobUrl(CreateConnection, url) ?? url;
 
-            // Use live Visual Studio instance
-            var solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
-            var workingDir = FindWorkingDirectoryForUrl(solutionPaths, url);
-            if (workingDir != null)
+            switch(Environment.OSVersion.Platform)
             {
-                // Convert diff to blob URLs
-                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
-                await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
-                return;
+                
+                case PlatformID.Win32NT:
+                    // Use live Visual Studio instance
+                    var solutionPaths = await VisualStudioUtilities.GetSolutionPaths();
+                    var workingDir = FindWorkingDirectoryForUrl(solutionPaths, url);
+                    if (workingDir != null)
+                    {
+                        // Convert diff to blob URLs
+                        url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                        await VisualStudioUtilities.OpenFromUrlAsync(workingDir, url);
+                        return;
+                    }
+
+                    // Use live VSCode instance
+                    var codeFolders = VSCodeUtilities.GetFolders();
+                    workingDir = FindWorkingDirectoryForUrl(codeFolders, url);
+                    if (workingDir != null)
+                    {
+                        // Convert diff to blob URLs
+                        url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                        VSCodeUtilities.OpenFromUrl(workingDir, url);
+                        return;
+                    }
+
+                    CommndLineUtilities.OpenFromUrl(url);
+                    break;
+                default:
+                    var currentFolder = new [] { Directory.GetCurrentDirectory() };
+                    workingDir = FindWorkingDirectoryForUrl(currentFolder, url);
+                    if (workingDir != null)
+                    {
+                        // Convert diff to blob URLs
+                        url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
+                        VSCodeUtilities.OpenFromUrl(workingDir, url);
+                        return;
+                    }
+
+                   throw new ApplicationException("Can't find folder to open for URL");
             }
 
-            // Use live VSCode instance
-            var codeFolders = VSCodeUtilities.GetFolders();
-            workingDir = FindWorkingDirectoryForUrl(codeFolders, url);
-            if (workingDir != null)
-            {
-                // Convert diff to blob URLs
-                url = await GitHubUrlUtilities.DiffToBlobUrl(CreateConnection, workingDir, url) ?? url;
-                VSCodeUtilities.OpenFromUrl(workingDir, url);
-                return;
-            }
-
-            CommndLineUtilities.OpenFromUrl(url);
         }
 
         static string FindWorkingDirectoryForUrl(IEnumerable<string> paths, UriString targetUrl)
