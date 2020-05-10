@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -10,6 +10,9 @@ namespace GHVS
 {
     class VSCodeUtilities
     {
+        internal static readonly string VSCodeName = "code";
+        internal static readonly string VSCodeInsidersName = "code-insiders";
+
         public static IEnumerable<string> FindApplicationPaths()
         {
             if (Registry.GetValue(@"HKEY_CLASSES_ROOT\Applications\Code.exe\shell\open\command", null, null) is string commandLine)
@@ -45,7 +48,7 @@ namespace GHVS
                 WorkingDirectory = folder,
                 UseShellExecute = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = "code",
+                FileName = GetVSCodeExecutable(),
                 Arguments = $". -g \"{gotoPath}\""
             };
 
@@ -70,11 +73,47 @@ namespace GHVS
             {
                 UseShellExecute = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = "code",
+                FileName = GetVSCodeExecutable(),
                 Arguments = $"\"{path}\""
             };
 
             return Process.Start(startInfo);
+        }
+
+        static string GetVSCodeExecutable()
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // HACK: Always use "code" in Windows
+                return VSCodeName;
+            }
+
+            if (Which(VSCodeInsidersName) is string codeInsidersFile && !string.IsNullOrEmpty(codeInsidersFile))
+            {
+                return codeInsidersFile;
+            }
+
+            if (Which(VSCodeName) is string codeFile && !string.IsNullOrEmpty(codeFile))
+            {
+                return codeFile;
+            }
+
+            throw new ApplicationException("Couldn't find VS Code or VS Code Insiders executable");
+        }
+
+        static string Which(string executableName)
+        {            
+            var startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                FileName = "which",
+                Arguments = executableName
+            };
+
+            var process = Process.Start(startInfo);
+            return process.StandardOutput.ReadToEnd().TrimEnd();
         }
 
         public static IEnumerable<string> GetFoldersForPath(string path)

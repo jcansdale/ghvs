@@ -62,7 +62,7 @@ namespace GHVS
 
         static bool IsCode(string application)
         {
-            return Path.GetFileNameWithoutExtension(application).Equals("code", StringComparison.OrdinalIgnoreCase);
+            return Path.GetFileNameWithoutExtension(application).Equals(VSCodeUtilities.VSCodeName, StringComparison.OrdinalIgnoreCase);
         }
 
         public static string FindVisualStudioApplication()
