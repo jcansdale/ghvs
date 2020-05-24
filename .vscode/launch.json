@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/GHVS/bin/Debug/netcoreapp3.0/GHVS.dll",
-            "args": ["/home/vsonline/workspace/ghvs/README.md"],
+            "args": ["https://github.com/jcansdale/ghvs/blob/master/README.md#L7"],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false
