@@ -15,4 +15,4 @@ if [[ $(uname) == "Linux" ]]; then
     fi
 fi
 
-ghvs $@
+command ghvs $@
