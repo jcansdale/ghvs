@@ -28,9 +28,6 @@ ghvs https://github.com/jcansdale/ghvs/pull/35/files#diff-1b0c2b516b83393edb7200
 
 # Any file in Git repo
 ghvs https://github.com/jcansdale/ghvs/blob/c424c015135f89d5e9a00f40df67f88bee73dd5b/run.sh#L8
-
-# An inline comment
-ghvs https://github.com/jcansdale/ghvs/pull/35#pullrequestreview-418359438
 ```
 
 ## Usage
