@@ -1,6 +1,40 @@
 # GHVS
 Seamless navigation between Git, GitHub and Visual Studio
 
+## Getting started
+
+1. Add the following alias to your dotfiles or run
+
+```
+# Bootstrap run.sh for ghvs tool
+alias ghvs='source <(curl -Lks https://raw.githubusercontent.com/jcansdale/ghvs/master/run.sh)'
+```
+
+2. Clone a repository
+
+```
+git clone https://github.com/jcansdale/ghvs
+cd ghvs
+```
+
+3. Pass a GitHub URL to `ghvs`
+
+The following GitHub URLs are supported.
+
+
+```
+# An added or changed line from the diff view.
+ghvs https://github.com/jcansdale/ghvs/pull/35/files#diff-1b0c2b516b83393edb7200ad5ff12181R8
+
+# Any file in Git repo
+ghvs https://github.com/jcansdale/ghvs/blob/c424c015135f89d5e9a00f40df67f88bee73dd5b/run.sh#L8
+
+# An inline comment
+ghvs https://github.com/jcansdale/ghvs/pull/35#pullrequestreview-418359438
+```
+
+## Usage
+
 ```
 Usage: ghvs [options] [command]
 
