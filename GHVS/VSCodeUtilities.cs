@@ -42,17 +42,30 @@ namespace GHVS
 
         public static Process OpenFileInFolder(string folder, string path, int? line = null)
         {
-            var gotoPath = line != null ? $"{path}:{line}" : path;
+            var args = "-g " + (line != null ? $"{path}:{line}" : path);
+
+            // Opening a file inside a folder doesn't currently work when using the WebUI
+            if (!IsWebUI())
+            {
+                args = ". " + args;
+            }
+
             var startInfo = new ProcessStartInfo
             {
                 WorkingDirectory = folder,
                 UseShellExecute = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = GetVSCodeExecutable(),
-                Arguments = $". -g \"{gotoPath}\""
+                Arguments = args
             };
 
             return Process.Start(startInfo);
+        }
+
+        static bool IsWebUI()
+        {
+            return Environment.GetEnvironmentVariable("CLOUDENV_SERVICE_ENDPOINT") ==
+                "https://online.visualstudio.com/api/v1";
         }
 
         public static void OpenFromUrl(string url)
