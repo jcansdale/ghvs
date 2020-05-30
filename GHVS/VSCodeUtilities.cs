@@ -40,7 +40,7 @@ namespace GHVS
             return false;
         }
 
-        public static Process OpenFileInFolder(string folder, string path, int? line = null)
+        public static int OpenFileInFolder(string folder, string path, int? line = null)
         {
             var args = "-g " + (line != null ? $"{path}:{line}" : path);
 
@@ -59,7 +59,9 @@ namespace GHVS
                 Arguments = args
             };
 
-            return Process.Start(startInfo);
+            var process = Process.Start(startInfo);
+            process.WaitForExit();
+            return process.ExitCode;
         }
 
         static bool IsWebUI()
@@ -68,19 +70,22 @@ namespace GHVS
                 "https://online.visualstudio.com/api/v1";
         }
 
-        public static void OpenFromUrl(string url)
+        public static int OpenFromUrl(string url)
         {
             var repositoryUrl = new UriString(url).ToRepositoryUrl();
             var vscodeUri = $"vscode://vscode.git/clone?url={repositoryUrl}";
 
-            Process.Start(new ProcessStartInfo
+            var process = Process.Start(new ProcessStartInfo
             {
                 FileName= vscodeUri,
                 UseShellExecute = true
             });
+
+            process.WaitForExit();
+            return process.ExitCode;
         }
 
-        public static Process OpenFileOrFolder(string path)
+        public static int OpenFileOrFolder(string path)
         {
             var startInfo = new ProcessStartInfo
             {
@@ -90,7 +95,10 @@ namespace GHVS
                 Arguments = $"\"{path}\""
             };
 
-            return Process.Start(startInfo);
+            var process = Process.Start(startInfo);
+
+            process.WaitForExit();
+            return process.ExitCode;
         }
 
         static string GetVSCodeExecutable()
