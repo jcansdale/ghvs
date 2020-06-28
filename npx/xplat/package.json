@@ -6,6 +6,7 @@
         "ghvsx": "bin/index.js"
     },
     "dependencies": {
-        "libnpx": "^10.2.3"
+        "libnpx": "^10.2.3",
+        "npm": "^6.14.5"
     }
 }
