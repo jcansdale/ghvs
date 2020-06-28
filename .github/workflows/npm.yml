@@ -1,0 +1,23 @@
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+
+    - uses: aarnott/nbgv@v0.3
+      with:
+        setAllVars: true
+
+    - run: echo "NBGV_SemVer2 $NBGV_SemVer2"
+      shell: bash
+
+    - run: |
+        cd npx/xplat
+        npm pack
+      
