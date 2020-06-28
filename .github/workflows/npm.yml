@@ -1,0 +1,54 @@
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+
+    - uses: aarnott/nbgv@v0.3
+      with:
+        setAllVars: true
+
+    - run: echo "NBGV_SemVer2 $NBGV_SemVer2"
+      shell: bash
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - run: |
+        cd npx/xplat/
+        npm version $NBGV_SemVer2
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - run: |
+        cd npx/win-x64/
+        npm version $NBGV_SemVer2
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - run: |
+        cd npx/osx-x64/
+        npm version $NBGV_SemVer2
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+    - run: |
+        cd npx/linux-x64/
+        npm version $NBGV_SemVer2
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
