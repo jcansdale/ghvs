@@ -16,7 +16,10 @@ jobs:
     - run: echo "NBGV_SemVer2 $NBGV_SemVer2"
       shell: bash
 
-    - run: |
-        cd npx/xplat
-        npm pack
+    - run: npm pack npx/xplat
+
+    - run: npm pack npx/win-x64
+
+    - run: npm pack npx/osx-x64
       
+    - run: npm pack npx/linux-x64
