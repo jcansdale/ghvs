@@ -1,6 +1,7 @@
 {
     "name": "@jcansdale/ghvs",
     "version": "0.0.6",
+    "main": "index.js",
     "bin": {
         "ghvsx": "bin/index.js"
     },
