@@ -1,0 +1,8 @@
+{
+    "name": "@jcansdale/ghvs-win-x64",
+    "version": "0.0.0",
+    "bin": { "ghvs-win-x64" : "./index.js" },
+    "scripts": {
+        "prepare": "dotnet publish ../../GHVS/GHVS.csproj -c Release -r win-x64 --self-contained true -o bin"
+    }
+}
