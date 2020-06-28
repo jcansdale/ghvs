@@ -16,22 +16,39 @@ jobs:
     - run: echo "NBGV_SemVer2 $NBGV_SemVer2"
       shell: bash
 
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+        registry-url: 'https://registry.npmjs.org'
+
     - run: |
         cd npx/xplat/
         npm version $NBGV_SemVer2
-        npm pack 
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - run: |
         cd npx/win-x64/
         npm version $NBGV_SemVer2
-        npm pack
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - run: |
         cd npx/osx-x64/
         npm version $NBGV_SemVer2
-        npm pack
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
     - run: |
         cd npx/linux-x64/
         npm version $NBGV_SemVer2
-        npm pack
+        npm install
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
