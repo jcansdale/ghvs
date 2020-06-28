@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <AssemblyName>ghvs</AssemblyName>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>GHVS</RootNamespace>
     <Authors>Jamie Cansdale</Authors>
