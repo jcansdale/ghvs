@@ -24,6 +24,7 @@ namespace GHVS
         typeof(UpstreamCommand),
         typeof(LoginCommand),
         typeof(LogoutCommand),
+        typeof(SetTokenCommand),
         typeof(OpenCommand),
         typeof(OpenUrlCommand),
         typeof(InstallCommand),
@@ -359,7 +360,6 @@ Associated pull requests:");
         }
     }
 
-
     [Command(Description = "Logout using GitHub Credential Manager")]
     class LogoutCommand : GitHubCommandBase
     {
@@ -371,6 +371,22 @@ Associated pull requests:");
 
             await Task.Yield();
         }
+    }
+
+    [Command(Description = "Set credentials with a personal access token")]
+    class SetTokenCommand : GitHubCommandBase
+    {
+        protected override async Task OnExecute(CommandLineApplication app)
+        {
+            var host = Host ?? "https://github.com";
+
+            SetToken(host, PersonalAccessToken);
+
+            await Task.Yield();
+        }
+
+        [Argument(0, Description = "Personal access token")]
+        public string PersonalAccessToken { get; set; }
     }
 
     [Command(Description = "Open a file or folder in Visual Studio")]
@@ -639,7 +655,7 @@ Associated pull requests:");
                     var userPass = CredentialManager.Fill(new Uri(targetUrl));
 
                     // Experimental VS Online support
-                    if(userPass.Password == "x-oauth-basic")
+                    if (userPass.Password == "x-oauth-basic")
                     {
                         return userPass.Username;
                     }
@@ -662,6 +678,23 @@ Associated pull requests:");
             }
 
             throw new ApplicationException($"Couldn't find credentials for {url}");
+        }
+
+        protected void SetToken(string url, string token)
+        {
+            var targetUrl = new Uri(url).GetLeftPart(UriPartial.Authority);
+            switch (SecretStore)
+            {
+                case SecretStores.Credential:
+                    throw new ApplicationException("Can't set credential manager token");
+                default:
+                    // Use a specific secret store
+                    var secretStore = CreateSecretStore();
+                    var auth = new BasicAuthentication(secretStore);
+                    var creds = new Credential("token", token);
+                    auth.SetCredentials(new TargetUri(targetUrl), creds);
+                    break;
+            }
         }
 
         SecretStore CreateSecretStore() =>  SecretStore switch
